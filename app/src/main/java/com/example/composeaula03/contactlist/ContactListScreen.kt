@@ -14,6 +14,8 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -21,46 +23,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.composeaula03.data.Contact
 import kotlin.math.exp
 
-val dummyList = listOf<Contact>(
-    Contact(
-        0,
-        "Mauricio Begnini",
-        "(99) 9 9999-9999",
-        "Av. Expedicionários, 2150 - Campo da Água Verde, Canoinhas"
-    ) ,
-    Contact(
-        1,
-        "Lucas Bueno",
-        "(99) 9 9999-9999",
-        "Av. Expedicionários, 2150 - Campo da Água Verde, Canoinhas"
-    ) ,
-    Contact(
-        2,
-        "Luciano Barreto",
-        "(99) 9 9999-9999",
-        "Av. Expedicionários, 2150 - Campo da Água Verde, Canoinhas"
-    ) ,
-    Contact(
-        3,
-        "Alexandre Abreu",
-        "(99) 9 9999-9999",
-        "Av. Expedicionários, 2150 - Campo da Água Verde, Canoinhas"
-    ) ,
-    Contact(
-        4,
-        "Denílson Barbosa",
-        "(99) 9 9999-9999",
-        "Av. Expedicionários, 2150 - Campo da Água Verde, Canoinhas"
-    ) ,
-)
 
 @Composable
-fun ContactListScreen(navController: NavController) {
+fun ContactListScreen(
+    navController: NavController,
+    contactListViewModel: ContactListViewModel,
+) {
     Scaffold(
         floatingActionButton =  {
             FloatingActionButton(onClick = {
@@ -70,7 +44,8 @@ fun ContactListScreen(navController: NavController) {
             }
         }
     ) {
-        ContactList(contacts = dummyList)
+        val contactList by contactListViewModel.contactList.observeAsState()
+        ContactList(contacts = contactList ?: listOf<Contact>())
     }
 }
 
@@ -127,7 +102,7 @@ fun ContactEntry(contact: Contact) {
             if(expanded){
                 Text(
                     modifier = Modifier.padding(start = 6.dp),
-                    text = contact.number,
+                    text = "${contact.id}",
                     style = MaterialTheme.typography.subtitle2.copy(color = Color.LightGray)
                 )
                 Text(
@@ -143,13 +118,16 @@ fun ContactEntry(contact: Contact) {
 @Preview
 @Composable
 fun ContactListScreenPreview() {
-    ContactListScreen(rememberNavController())
+    val viewModel: ContactListViewModel = viewModel()
+    ContactListScreen(rememberNavController(), viewModel)
 }
 
 @Preview
 @Composable
 fun ContactListPreview() {
-    ContactList(contacts = dummyList)
+    val viewModel: ContactListViewModel = viewModel()
+    val contactList by viewModel.contactList.observeAsState()
+    ContactList(contacts = contactList ?: listOf())
 }
 
 @Preview

@@ -5,19 +5,25 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.composeaula03.data.Contact
 
 @Composable
 fun AddEditContactScren(
     navController: NavController,
+    addEditContactListViewModel: AddEditContactViewModel,
+    onInsertContact: (Contact) -> Unit
 ) {
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(onClick = {
+                addEditContactListViewModel.insertContact(onInsertContact)
                 navController.navigate("contactlist"){
                     popUpTo("contactlist"){
                         inclusive = true
@@ -28,15 +34,17 @@ fun AddEditContactScren(
             }
         }
     ) {
-        AddEditContactForm()
+        AddEditContactForm(addEditContactListViewModel)
     }
 }
 
 @Composable
-fun AddEditContactForm() {
-    var name by remember { mutableStateOf("")}
-    var number by remember { mutableStateOf("")}
-    var address by remember { mutableStateOf("")}
+fun AddEditContactForm(
+    addEditContactListViewModel: AddEditContactViewModel
+) {
+    var name = addEditContactListViewModel.name.observeAsState()
+    var number = addEditContactListViewModel.number.observeAsState()
+    var address = addEditContactListViewModel.address.observeAsState()
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -49,9 +57,9 @@ fun AddEditContactForm() {
             label = {
                     Text(text = "Name")
             },
-            value = name,
+            value = "${name.value}",
             onValueChange = { newName->
-                name = newName
+                addEditContactListViewModel.name.value = newName
             }
         )
         OutlinedTextField(
@@ -61,9 +69,9 @@ fun AddEditContactForm() {
             label = {
                 Text(text = "Number")
             },
-            value = number,
+            value = "${number.value}",
             onValueChange = { newNumber->
-                number = newNumber
+                addEditContactListViewModel.number.value = newNumber
             }
         )
         OutlinedTextField(
@@ -72,17 +80,17 @@ fun AddEditContactForm() {
             label = {
                 Text(text = "Address")
             },
-            value = address,
+            value = "${address.value}",
             onValueChange = { newAddress->
-                address = newAddress
+                addEditContactListViewModel.address.value = newAddress
             }
         )
-
     }
 }
 
 @Preview
 @Composable
 fun AddEditContactFormPreview() {
-    AddEditContactForm()
+    val addEditContactViewModel: AddEditContactViewModel = viewModel()
+    AddEditContactForm(addEditContactViewModel)
 }
