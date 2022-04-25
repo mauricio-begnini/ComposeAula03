@@ -7,13 +7,12 @@ import androidx.activity.viewModels
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.composeaula03.addeditcontact.AddEditContactScren
+import com.example.composeaula03.addeditcontact.AddEditContactScreen
 import com.example.composeaula03.addeditcontact.AddEditContactViewModel
 import com.example.composeaula03.contactlist.ContactListScreen
 import com.example.composeaula03.contactlist.ContactListViewModel
@@ -49,11 +48,22 @@ fun MyApp(
             composable("contactlist"){
                 ContactListScreen(navController, contactListViewModel)
             }
-            composable(route = "addeditcontact"){
-                AddEditContactScren(
+            composable(
+                route = "addeditcontact?id={id}",
+                arguments = listOf(navArgument("id"){
+                    defaultValue = -1
+                    type = NavType.IntType
+                })
+            ){ navBackStackEntry ->
+                val id = navBackStackEntry.arguments?.getInt("id") ?: -1
+                val contact = contactListViewModel.getContact(id)
+                AddEditContactScreen(
                     navController,
                     addEditContactListViewModel,
-                    contactListViewModel::insertContact
+                    contactListViewModel::insertContact,
+                    contactListViewModel::updateContact,
+                    contactListViewModel::removeContact,
+                    contact
                 )
             }
         }

@@ -42,13 +42,67 @@ class ContactListViewModel : ViewModel() {
         )
     )
 
+    private val _filterBy: MutableLiveData<String> = MutableLiveData("")
+
+    val filterBy: LiveData<String>
+        get() = _filterBy
+
     val contactList: LiveData<List<Contact>>
-        get() = _contactList
+        get() {
+            return if(_filterBy.value == "")
+                _contactList
+            else{
+                val list: List<Contact> = _contactList.value?.filter { contact ->
+                    contact.name.contains(_filterBy.value ?: "")
+                } ?: listOf()
+                MutableLiveData(list)
+            }
+        }
+
+    fun updateFilter(newFilter: String) {
+        _filterBy.value = newFilter
+    }
 
     fun insertContact(contact: Contact){
         val list: MutableList<Contact> = _contactList.value?.toMutableList() ?: return
         list.add(contact)
         _contactList.value = list
+    }
+
+    fun updateContact(updatedContact: Contact){
+        var pos = -1
+        _contactList.value?.forEachIndexed { index, contact ->
+            if(updatedContact.id == contact.id)
+                pos = index
+        }
+        val list: MutableList<Contact> = _contactList.value?.toMutableList() ?: return
+        list.removeAt(pos)
+        list.add(pos, updatedContact)
+        _contactList.value = list
+    }
+
+    fun removeContact(id: Int){
+        var pos = -1
+        _contactList.value?.forEachIndexed { index, contact ->
+            if(id == contact.id)
+                pos = index
+        }
+        val list: MutableList<Contact> = _contactList.value?.toMutableList() ?: return
+        list.removeAt(pos)
+        _contactList.value = list
+    }
+
+    fun getContact(id: Int): Contact {
+        _contactList.value?.forEach{ contact ->
+            if(id == contact.id)
+                return contact
+        }
+        return Contact(
+            -1,
+            "",
+            "",
+            ""
+        )
     }
 
 }

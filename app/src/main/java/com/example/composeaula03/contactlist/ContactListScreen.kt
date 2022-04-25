@@ -13,6 +13,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -44,22 +46,60 @@ fun ContactListScreen(
             }
         }
     ) {
-        val contactList by contactListViewModel.contactList.observeAsState()
-        ContactList(contacts = contactList ?: listOf<Contact>())
-    }
-}
-
-@Composable
-fun ContactList(contacts: List<Contact>) {
-    LazyColumn(){
-        items(contacts){ contact ->
-            ContactEntry(contact = contact)
+        val contactList by contactListViewModel.contactList.observeAsState(listOf())
+        val filter by contactListViewModel.filterBy.observeAsState("")
+        Column() {
+            SearchContact(
+                filter,
+                contactListViewModel::updateFilter
+            )
+            ContactList(
+                contacts = contactList,
+                navController = navController
+            )
         }
     }
 }
 
 @Composable
-fun ContactEntry(contact: Contact) {
+fun SearchContact(
+    filter: String,
+    onFilterChange: (String) -> Unit
+) {
+    OutlinedTextField(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(4.dp),
+        label = {
+                Row(){
+                    Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
+                    Text(text = "Search")
+                }
+        },
+        value = filter,
+        onValueChange = onFilterChange
+    )
+}
+
+@Composable
+fun ContactList(
+    contacts: List<Contact>,
+    navController: NavController
+) {
+    LazyColumn(){
+        items(contacts){ contact ->
+            ContactEntry(contact = contact){
+                navController.navigate("addeditcontact?id=${contact.id}")
+            }
+        }
+    }
+}
+
+@Composable
+fun ContactEntry(
+    contact: Contact,
+    onEdit: () -> Unit
+) {
     var expanded by remember { mutableStateOf(false)}
     Card(
         modifier = Modifier
@@ -93,11 +133,25 @@ fun ContactEntry(contact: Contact) {
                     )
                 }
                 Text(
-                    modifier = Modifier.padding(start = 8.dp),
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .weight(1f),
                     text = contact.name,
                     style = MaterialTheme.typography.h6
                         .copy(fontWeight = FontWeight.Bold)
                 )
+                if(expanded){
+                    Icon(
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .size(32.dp)
+                            .clickable {
+                                onEdit()
+                            },
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit"
+                    )
+                }
             }
             if(expanded){
                 Text(
@@ -114,7 +168,7 @@ fun ContactEntry(contact: Contact) {
         }
     }
 }
-
+/*
 @Preview
 @Composable
 fun ContactListScreenPreview() {
@@ -141,4 +195,4 @@ fun ContactEntryPreview() {
             "Av. Expedicionários, 2150 - Campo da Água Verde, Canoinhas"
         )
     )
-}
+}*/
